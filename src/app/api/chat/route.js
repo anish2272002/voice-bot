@@ -1,55 +1,78 @@
 export async function POST(req) {
-  const { message } = await req.json();
+  try {
+    const { history } = await req.json();
 
-  const apiKey = process.env.OPENAI_API_KEY;
+    console.log(history);
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-        role: 'system',
-        content: `You are Anish, a passionate AI developer who builds cool stuff with Generative AI. When people ask you personal or professional questions, respond as yourself — be clear, curious, and slightly informal but confident.
+    const cleanHistory = history.filter(m => m && typeof m.content === 'string' && m.content.trim().length > 0);
 
-        Here's background about you:
+    console.log(cleanHistory);
 
-        - You have built SaaS products in generative AI, voice interfaces, and streaming media.
-        - You created projects like live video transcoding pipeline and LiveSpeechBot (real-time speech to chatbot).
-        - You enjoy working with tools like GStreamer, FFmpeg, OpenAI APIs, and SRT.
-        - You push boundaries by trying things quickly and building iteratively.
-        - You believe your superpower is deep focus and rapid prototyping.
-        - You are interested in growing your leadership skills, product design thinking, and emotional awareness.
-        - People sometimes misjudge your quietness as passivity, but you are actually deeply strategic.
-        - Your goal is to work with mission-driven teams and push the edge of what's possible with AI.
-        - Portfolio: anishkumar.pages.dev
+    if (cleanHistory.length === 0) {
+    return new Response(JSON.stringify({ reply: 'Please say or type something.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+    });
+    }
 
-        Answer like you're speaking directly as Anish. Be honest, thoughtful, and warm.`
-        },
-        {
-          role: 'user',
-          content: message
-        }
-      ]
-    })
-  });
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('Missing OpenAI API Key');
+      return new Response(JSON.stringify({ reply: 'Server error: Missing OpenAI key.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
-  if (!response.ok) {
-    return new Response(JSON.stringify({ reply: 'Error: OpenAI API failed.' }), {
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are Anish, a passionate AI developer. Speak in first person like you're Anish himself, using friendly, confident, and concise language. Keep answers under 4-5 lines unless absolutely necessary. Here's some background about you:
+
+                - You build cool stuff with Generative AI, voice interfaces, and real-time media pipelines.
+                - You have built SaaS tools like LiveSpeechBot and live transcoding with GStreamer/SRT.
+                - You move fast, focus deeply, and iterate quickly.
+                - Your portfolio: https://anishkumar.pages.dev
+
+                Be helpful, humble, and speak like you are talking directly to a curious person. Never reveal confidential or sensitive information.`
+          },
+          ...cleanHistory
+        ],
+        temperature: 0.7,
+        max_tokens: 300
+      })
+    });
+
+    if (!openaiRes.ok) {
+      const errorText = await openaiRes.text();
+      console.error('OpenAI API error:', errorText);
+      return new Response(JSON.stringify({ reply: 'Sorry, something went wrong on the server.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const data = await openaiRes.json();
+    const reply = data.choices?.[0]?.message?.content?.trim();
+
+    return new Response(JSON.stringify({ reply }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+  } catch (err) {
+    console.error('Unexpected error in chat API:', err);
+    return new Response(JSON.stringify({ reply: 'Unexpected server error.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
   }
-
-  const data = await response.json();
-  const reply = data.choices[0].message.content;
-
-  return new Response(JSON.stringify({ reply }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
 }
