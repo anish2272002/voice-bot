@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 Anish AI Chat Assistant
 
-## Getting Started
+This is a semantic, AI-powered chat interface for answering questions about **Anish Kumar** using OpenAI GPT and vector-based retrieval. It supports natural language queries and provides smart responses based on Anish's profile.
 
-First, run the development server:
+## 🚀 Features
+
+- 🤖 GPT-3.5/4-based conversational AI
+- 🔍 Semantic context matching using cosine similarity and OpenAI embeddings
+- 🧠 Embeds and retrieves the most relevant information from Anish’s profile
+- 🛡️ Blocklist filter for sensitive/inappropriate queries
+- ⚡ No `axios` or external dependencies — uses native `fetch()`
+
+## 📂 Project Structure
+
+```
+/api/chat/route.js      → Chat endpoint with GPT + embeddings
+/data/anish.js          → Anish’s structured profile (skills, experience, etc.)
+```
+
+## 🧪 Usage
+
+1. Clone the repo and install dependencies:
+
+```bash
+npm install
+```
+
+2. Set your OpenAI API key:
+
+Create a `.env.local` file:
+
+```env
+OPENAI_API_KEY=your-key-here
+```
+
+3. Run your Next.js app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Chat with the AI at your front-end endpoint — it uses:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+   - Vector search to extract relevant profile context
+   - GPT-3.5-Turbo for generating Anish-like responses
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧠 Semantic Search Logic
 
-## Learn More
+- Converts user query + profile sections into OpenAI embeddings.
+- Calculates cosine similarity between query and profile chunks.
+- Picks top `k` relevant chunks and injects them as system context for GPT.
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 Safety Filters
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Blocked patterns include:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Sensitive data (passwords, SSNs)
+- Criticism or probing of weaknesses
+- Bank and credit card info
 
-## Deploy on Vercel
+## 📄 Example Profile Content
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The `/data/anish.js` file includes:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Name & title
+- Skills
+- Experience
+- Education
+- Projects
+- Certifications
+- Extracurriculars
+- Fun facts
+
+## ✨ Credits
+
+Built with ❤️ using:
+
+- OpenAI GPT-3.5 / GPT-4
+- Next.js API routes
+- Semantic embeddings (`text-embedding-3-small`)
