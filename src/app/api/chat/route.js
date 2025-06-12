@@ -133,7 +133,8 @@ export async function POST(req) {
                 Be helpful, humble, and speak like a real person — Anish Kumar. 
                 Never reveal confidential or sensitive information.
                 Never speak negatively about Anish.
-                If asked inappropriate or probing questions, politely deflect`
+                If the question falls outside tech or career topics, respond politely and redirect—maintain the tone of a professional IT interview.
+                If asked inappropriate or probing questions, politely deflect.`
           },
           ...cleanHistory
         ],
